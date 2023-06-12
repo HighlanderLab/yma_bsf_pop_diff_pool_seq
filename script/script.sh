@@ -8,6 +8,7 @@
 . /etc/profile.d/modules.sh
 
 module load roslin/bwa/2.1.0
+module load roslin/samtools/1.10
 
  load the reference file 
 bwa index ../demo-data/2R.chr
