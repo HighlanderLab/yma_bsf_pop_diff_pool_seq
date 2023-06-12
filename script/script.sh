@@ -26,6 +26,6 @@ samtools view -q 20 -bS ../map_pop/pop1.sam | samtools sort -o ../map_pop/pop1_s
 samtools view -q 20 -bS ../map_pop/pop2.sam | samtools sort -o ../map_pop/pop2_sorted.bam
 
 #creat mpileup file
-samtools mpileup -B ../map_pop/pop1_sorted.bam ../map_pop/pop2_sorted.bam > ../mapped/p1_p2.mpileup
+samtools mpileup -B ../map_pop/pop1_sorted.bam ../map_pop/pop2_sorted.bam > ../map_pop/p1_p2.mpileup
 
 #$ -e mapping.e
