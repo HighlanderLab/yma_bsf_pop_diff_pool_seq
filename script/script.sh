@@ -1,6 +1,6 @@
 #!/bin/sh
 #$ -cwd
-#$ -N mapping
+#$ -N map_reads
 #$ -l h_vmem=64G
 
 
@@ -9,14 +9,22 @@
 
 module load roslin/bwa/2.1.0
 
-# load the reference file 
-#bwa index ../ref/ref.fasta 
+ load the reference file 
+bwa index ../demo-data/2R.chr
 
 #map reads to reference
-bwa aln -n 0.01 -l 100 -o 1 -d 12 -e 12  ../ref/ref.fasta ../sequence/SRR189066_1.fastq > ../map/SRR1.sai
-bwa aln -n 0.01 -l 100 -o 1 -d 12 -e 12  ../ref/ref.fasta ../sequence/SRR189066_2.fastq > ../map/SRR2.sai
+mkdir ../map_pop
+bwa aln ../demo-data/2R.chr ../demo-data/pop1.fastq > ../map_pop/pop1.sai
+bwa aln ../demo-data/2R.chr ../demo-data/pop2.fastq > ../map_pop/pop2.sai
 
-bwa samse ../ref/ref.fasta ../map/SRR1.sai ../sequence/SRR189066_1.fastq > ../map/SSR1.sam
-bwa samse ../ref/ref.fasta ../map/SRR2.sai ../sequence/SRR189066_2.fastq > ../map/SSR2.sam
+bwa samse ../demo-data/2R.chr ../map_pop/pop1.sai ../demo-data/pop1.fastq > ../map_pop/pop1.sam
+bwa samse ../demo-data/2R.chr ../map_pop/pop2.sai ../demo-data/pop2.fastq > ../map_pop/pop2.sam
+
+#remove ambiguously mapped reads
+samtools view -q 20 -bS ../map_pop/pop1.sam | samtools sort -o ../map_pop/pop1_sorted.bam
+samtools view -q 20 -bS ../map_pop/pop2.sam | samtools sort -o ../map_pop/pop2_sorted.bam
+
+#creat mpileup file
+samtools mpileup -B ../map_pop/pop1_sorted.bam ../map_pop/pop2_sorted.bam > ../mapped/p1_p2.mpileup
 
 #$ -e mapping.e
