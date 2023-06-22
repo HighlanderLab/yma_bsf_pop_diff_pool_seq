@@ -1,0 +1,27 @@
+Input file does not exist
+Usage:
+     pwc2igv.pl --input fisher.results --output fisher.results.igv --log-transform
+
+Options:
+    --input
+        The input file. Has to be the output of either "fst-sliding.pl" or
+        "fisher-test.pl". Mandatory parameter
+
+    --output
+        The output file. Must have the extension ".igv". Can be directly
+        loaded into the IGV. Mandatory parameter
+
+    --window-size
+        specify the size of the window; optional parameter; default=1
+
+    --log-transform
+        flag; log transform the measure (-log10). This may be especially
+        useful for the results of <fisher-test.pl>; optional parameter;
+        default=off
+
+    --test
+        Run the unit tests for this script.
+
+    --help
+        Display help for this script
+

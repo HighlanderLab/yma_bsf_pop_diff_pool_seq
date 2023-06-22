@@ -1,3 +1,5 @@
+# third step
+
 #!/bin/bash
 
 #$ -N Work_with_Popoolation
@@ -19,6 +21,5 @@ module load roslin/perl/5.28.0
 # perl ../popoolation2_1201/snp-frequency-diff.pl --input-prefix ../map_allele_freq/p1_p2.sync --output ../map_allele_freq/p1_p2 --min-count 6 --min-coverage 50 --max-coverage 200
 
 #calculate Fst
-
- perl ../popoolation2_1201/fst-sliding.pl --input ../map_allele_freq/p1_p2.sync --output ../map_allele_freq/p1_p2.fst --suppress-noninformative --min-count 6 --min-coverage 50 --max-coverage 200 --min-covered-fraction 1 --window-size 1 --step-size 1 --pool-size 500
+perl ../popoolation2_1201/fst-sliding.pl --input ../map_allele_freq/p1_p2.sync --output ../map_allele_freq/p1_p2.fst --suppress-noninformative --min-count 6 --min-coverage 50 --max-coverage 200 --min-covered-fraction 1 --window-size 1 --step-size 1 --pool-size 500
 

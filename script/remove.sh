@@ -1,3 +1,5 @@
+# second step
+
 #!/bin/bash
 
 #$ -N remove_ambiguously_mapped_reads

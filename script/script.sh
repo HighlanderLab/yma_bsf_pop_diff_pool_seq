@@ -1,3 +1,5 @@
+# first step
+
 #!/bin/sh
 #$ -cwd
 #$ -N map_reads
