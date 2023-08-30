@@ -1,0 +1,53 @@
+#quality control with fastq
+fastq
+
+#trim off the reads with lower quality and adapter sequences
+trimmomatic JustFly.lib1_1.fq JustFly.lib1_2.fq ILLUMINACLIP:adapters/NexteraPE-PE.fa:2:30:10 AVGQUAL:20 HEADCROP:14 TOPHRED33
+trimmomatic HiperFly.lib1_1.fq HiperFly.lib1_2.fq ILLUMINACLIP:adapters/NexteraPE-PE.fa:2:30:10 AVGQUAL:20 HEADCROP:14 TOPHRED33
+
+#using bwa to read index
+bwa index ref/reference.fa.gz
+
+#map sequencing reads on assembly genome reference
+bwa mem ref/reference.fa.gz sequence/qc/after_trim/Hiper_Fly.lib1_1.fq sequence/qc/after_trim/Hiper_Fly.lib1_2.fq > ../map_pop/Hiper_Fly.sam
+bwa mem ref/reference.fa.gz sequence/qc/after_trim/Just_Fly.lib1_1.fq sequence/qc/after_trim/Just_Fly.lib1_2.fq > ../map_pop/Just_Fly.sam
+
+#filter the reads with lower mapping quality
+samtools view -q 20 -bS map_pop/Just_Fly.sam | samtools sort -o map_pop/Just_Fly_sorted.bam
+samtools view -q 20 -bS map_pop/Hiper_Fly.sam | samtools sort -o map_pop/Hiper_Fly_sorted.bam
+
+#quality control with samtools (map)
+samtools flagstat Just_Fly_sorted.bam > JustFly_bamreport.txt
+samtools flagstat Hiper_Fly_sorted.bam > HiperFly_bamreport.txt
+
+#combine mapping result of two populations together for calculating Fst
+samtools mpileup -B ../map_pop/Just_Fly_sorted.bam ../map_pop/Hiper_Fly_sorted.bam > ../map_pop/Hiper_Just.mpileup
+
+#convert mapping result for each poopulation for calculating 
+samtools mpileup ../map_pop/Just_Fly_sorted.bam > ../map_pop/Just_Fly.pileup
+samtools mpileup ../map_pop/Hiper_Fly_sorted.bam > ../map_pop/Hiper_Fly.pileup
+
+#calculate Tajima's D with popoolation
+perl popoolation_1.2.2./Variance-sliding.pl --input ./map_pop/Just_Fly.pileup --output ./variance/Just_Fly.D --measure D --window-size 10000 --step-size 10000 --min-count 2 --min-coverage 4 --max-coverage 400 --min-qual 20 --pool-size 50
+perl popoolation_1.2.2/Variance-sliding.pl --input ./map_pop/Hiper_Fly.pileup --output ./variance/Hiper_Fly.D --measure D --window-size 10000 --step-size 10000 --min-count 2 --min-coverage 4 --max-coverage 400 --min-qual 20 --pool-size 50
+
+#convert the mpileup file to synchronized file (special file format for calculating Fst by popoolation)
+perl popoolation2_1201/mpileup2sync.pl --fastq-type sanger --min-qual 20 --input map_pop/Hiper_Just.mpileup --output pop_gene_freq/Hiper_Just.sync
+
+#calculate Fst (each base)
+perl popoolation2_1201/snp-frequency-diff.pl --input pop_gene_freq/Hiper_Just.sync --output-prefix pop_gene_freq/Hiper_Just_fst --min-count 6 --min-coverage 20 --max-coverage 200
+
+#calculate Fst for each gene (on specific chromosome)
+
+#separate the sync file from different chromosomes
+grep 'NC_051849.1' pop_gene_freq/Hiper_Just.sync > pop_gene_freq/chr_sync/1.sync
+
+#separate the genetic annotation file (test2.gtf is the gene annotation )
+grep 'NC_051849.1' ref/test2.gtf > ref/annotation1.gtf
+
+#annotate each base on genome with gene name
+perl popoolation2_1201/create-genewise-sync.pl --input pop_gene_freq/chr_sync/1_filtered.sync --gtf ref/chr_annotation/exon1.gtf --output pop_gene_freq/chr_sync/1_exon.sync
+
+#calculate Fst for each gene
+perl popoolation2_1201/fst-sliding.pl --min-count 2 --min-coverage 5 --max-coverage 500 --pool-size 50 --min-covered-fraction 0.0 --window-size 100 --step-size 100 --input pop_gene_freq/chr_sync/1_exon.sync --output pop_gene_freq/fst_chr_100/1_exon.fst
+#repeat last four steps to calculate genes' Fst on different chromosomes. 
